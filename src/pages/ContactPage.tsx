@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { CheckCircle2, Clock, Loader2, Mail, MapPin, MessageCircle, Phone, Send, XCircle } from 'lucide-react';
+import { Clock, Mail, MapPin, MessageCircle, Phone, Send } from 'lucide-react';
 import useSeo from '@/hooks/useSeo';
 import { COMPANY, MAILTO, WHATSAPP_LINK } from '@/data/company';
-import { WEB3FORMS_ACCESS_KEY, WEB3FORMS_ENDPOINT } from '@/data/web3forms';
+import { FORMSUBMIT_ENDPOINT } from '@/data/forms';
 
 const CONTACT_CARDS = [
   { icon: Phone, title: 'Phone', value: COMPANY.mobile, href: 'tel:+971509664255' },
@@ -23,53 +22,6 @@ export default function ContactPage() {
     keywords:
       'contact Al Tareeq Al Kamil, bus rental Abu Dhabi contact, passenger transport Abu Dhabi contact, Mussafah M37 Abu Dhabi, WhatsApp bus hire Abu Dhabi, ' + COMPANY.mobile + ', ' + COMPANY.email,
   });
-
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setStatus('sending');
-    setErrorMsg('');
-
-    const botcheck = (e.currentTarget.elements.namedItem('botcheck') as HTMLInputElement | null)?.value ?? '';
-
-    try {
-      const res = await fetch(WEB3FORMS_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `New enquiry from website - ${name}`,
-          from_name: name,
-          from_email: email,
-          name,
-          phone,
-          email,
-          message,
-          botcheck,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setStatus('success');
-        setName('');
-        setPhone('');
-        setEmail('');
-        setMessage('');
-      } else {
-        setStatus('error');
-        setErrorMsg(data.message || 'Something went wrong. Please try again.');
-      }
-    } catch {
-      setStatus('error');
-      setErrorMsg('Network error. Please try again or contact us on WhatsApp directly.');
-    }
-  };
 
   return (
     <main>
@@ -117,109 +69,72 @@ export default function ContactPage() {
             <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-8">
               <h2 className="text-2xl font-extrabold text-[#0b2e59]">Send an Enquiry</h2>
               <p className="mt-2 text-sm text-gray-600">
-                Fill in the form and it is delivered straight to {COMPANY.email}.
+                Fill in the form — enquiries are delivered straight to {COMPANY.email}.
               </p>
-
-              {status === 'success' && (
-                <div className="mt-4 rounded-md bg-green-50 border border-green-200 p-4 text-sm text-green-800 flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
-                  <div>
-                    Thank you! Your enquiry has been sent to {COMPANY.email}. We will get back to you
-                    as soon as possible.
-                  </div>
+              <form
+                action={FORMSUBMIT_ENDPOINT}
+                method="POST"
+                className="mt-6 space-y-4"
+              >
+                <input type="hidden" name="_subject" value="New website enquiry - Al TAREEQ ALKAMIL" />
+                <input type="hidden" name="_captcha" value="false" />
+                <input type="hidden" name="_template" value="table" />
+                <input type="hidden" name="_honey" />
+                <input
+                  type="hidden"
+                  name="_next"
+                  value={`${window.location.origin}${window.location.pathname}#/contact?sent=1`}
+                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Your Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2e59]"
+                    placeholder="Full name"
+                  />
                 </div>
-              )}
-
-              {status === 'error' && (
-                <div className="mt-4 rounded-md bg-red-50 border border-red-200 p-4 text-sm text-red-700 flex items-start gap-2">
-                  <XCircle className="h-5 w-5 shrink-0 text-red-600 mt-0.5" />
-                  <div>
-                    {errorMsg} You can also reach us directly on WhatsApp:{' '}
-                    <a
-                      href={WHATSAPP_LINK}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold underline"
-                    >
-                      {COMPANY.mobile}
-                    </a>
-                    .
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Phone / WhatsApp</label>
+                  <input
+                    type="text"
+                    name="phone"
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2e59]"
+                    placeholder="Your contact number"
+                  />
                 </div>
-              )}
-
-              {status === 'success' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2e59]"
+                    placeholder="you@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Message <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="message"
+                    required
+                    rows={5}
+                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2e59]"
+                    placeholder="Group size, route and preferred dates..."
+                  />
+                </div>
                 <button
-                  onClick={() => setStatus('idle')}
-                  className="mt-6 inline-flex items-center gap-2 rounded-md bg-[#0b2e59] hover:bg-[#0d3a70] text-white px-6 py-3 font-semibold transition-colors"
+                  type="submit"
+                  className="inline-flex items-center gap-2 rounded-md bg-[#0b2e59] hover:bg-[#0d3a70] text-white px-6 py-3 font-semibold transition-colors"
                 >
                   <Send className="h-5 w-5" />
-                  Send Another Message
+                  Send Enquiry
                 </button>
-              ) : (
-                <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                  <div className="hidden">
-                    <input type="text" name="botcheck" tabIndex={-1} autoComplete="off" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Your Name *</label>
-                    <input
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      required
-                      className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2e59]"
-                      placeholder="Full name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone / WhatsApp</label>
-                    <input
-                      value={phone}
-                      onChange={e => setPhone(e.target.value)}
-                      className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2e59]"
-                      placeholder="Your contact number"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2e59]"
-                      placeholder="you@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Message *</label>
-                    <textarea
-                      value={message}
-                      onChange={e => setMessage(e.target.value)}
-                      required
-                      rows={5}
-                      className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2e59]"
-                      placeholder="Group size, route and preferred dates..."
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={status === 'sending'}
-                    className="inline-flex items-center gap-2 rounded-md bg-[#0b2e59] hover:bg-[#0d3a70] text-white px-6 py-3 font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {status === 'sending' ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-5 w-5" />
-                        Send Enquiry
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
+              </form>
             </div>
 
             <div className="rounded-2xl bg-[#0b2e59] text-white p-8 flex flex-col">

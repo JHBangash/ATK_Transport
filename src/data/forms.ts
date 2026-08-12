@@ -1,0 +1,1 @@
+export const FORMSUBMIT_ENDPOINT = 'https://formsubmit.co/altareeqkamilad@gmail.com';
