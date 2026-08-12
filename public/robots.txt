@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jhbangash.github.io/ATK_Transport/sitemap.xml
