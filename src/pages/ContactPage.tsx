@@ -83,7 +83,7 @@ export default function ContactPage() {
                 <input
                   type="hidden"
                   name="_next"
-                  value={`${window.location.origin}${window.location.pathname}#/contact?sent=1`}
+                  value={`https://www.altareeqkamil.online/#/contact?sent=1`}
                 />
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
